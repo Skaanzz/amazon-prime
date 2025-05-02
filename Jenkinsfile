@@ -117,11 +117,11 @@ spec:
         stage('Deploy to Kubernetes') {
             steps {
         script {
-            withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
+            withCredentials([file(credentialsId: 'kubeconfig', variable: 'ADMIN_CONF')]) {
                 // Set up kubectl access
                 sh """
                     mkdir -p ~/.kube
-                    cp '${KUBECONFIG_FILE}' ~/.kube/config
+                    cp '${ADMIN_CONF}' ~/.kube/config
                     chmod 600 ~/.kube/config
                 """
 
