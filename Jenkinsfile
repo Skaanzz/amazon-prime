@@ -60,8 +60,8 @@ pipeline {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'docker') {
-                        sh "sudo docker tag amazon-prime skan07/amazon-prime:latest "
-                        sh "sudo docker push skan07/amazon-prime:latest "
+                        sh "docker tag amazon-prime skan07/amazon-prime:latest "
+                        sh "docker push skan07/amazon-prime:latest "
                     }
                 }
             }
