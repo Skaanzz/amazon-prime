@@ -69,10 +69,10 @@ pipeline {
         stage('Docker Scout Image') {
             steps {
                 script{
-                   withDockerRegistry(credentialsId: 'docker', toolName: 'docker'){
-                       sh 'sudo docker-scout quickview skan07/amazon-prime:latest'
-                       sh 'sudo docker-scout cves skan07/amazon-prime:latest'
-                       sh 'sudo docker-scout recommendations skan07/amazon-prime:latest'
+                   withDockerRegistry(credentialsId: 'docker'){
+                       sh 'docker-scout quickview skan07/amazon-prime:latest'
+                       sh 'docker-scout cves skan07/amazon-prime:latest'
+                       sh 'docker-scout recommendations skan07/amazon-prime:latest'
                    }
                 }
             }
