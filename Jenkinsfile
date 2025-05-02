@@ -122,7 +122,7 @@ spec:
                 sh """
                     mkdir -p ~/.kube
                     cp '${KUBECONFIG_FILE}' ~/.kube/config
-                    sudo chmod 600 ~/.kube/config
+                    chmod 600 ~/.kube/config
                 """
 
                 // Apply Kubernetes manifests
