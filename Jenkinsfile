@@ -6,6 +6,8 @@ pipeline {
     }
     environment {
         SCANNER_HOME=tool 'sonar-scanner'
+        KUBE_CONFIG = credentials('kubeconfig')
+        DOCKER_IMAGE = 'skan07/amazon-prime:latest'
     }
     stages {
         stage ("clean workspace") {
@@ -75,34 +77,80 @@ pipeline {
                 }
             }
         }
-        stage ("Deploy to Container") {
+        stage('Generate Kubernetes Manifests') {
             steps {
-                sh 'docker run -d --name amazon-prime -p 3000:3000 skan07/amazon-prime:latest'
+                script {
+                    // Create deployment.yaml
+                    writeFile file: 'deployment.yaml', text: """
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: amazon-prime
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: amazon-prime
+  template:
+    metadata:
+      labels:
+        app: amazon-prime
+    spec:
+      containers:
+      - name: amazon-prime
+        image: ${DOCKER_IMAGE}
+        ports:
+        - containerPort: 3000
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+"""
+                    // Create service.yaml
+                    writeFile file: 'service.yaml', text: """
+apiVersion: v1
+kind: Service
+metadata:
+  name: amazon-prime-service
+spec:
+  type: NodePort
+  selector:
+    app: amazon-prime
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+"""
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+        script {
+            withCredentials([file(credentialsId: 'kubeconfig', variable: 'admin.conf')]) {
+                // Set up kubectl access
+                sh """
+                    mkdir -p ~/.kube
+                    cp '${admin.conf}' ~/.kube/config
+                    chmod 600 ~/.kube/config
+                """
+
+                // Apply Kubernetes manifests
+                sh 'kubectl apply -f deployment.yaml'
+                sh 'kubectl apply -f service.yaml'
+
+                // Verify deployment
+                sh 'kubectl rollout status deployment/amazon-prime --timeout=3m'
+                sh 'kubectl get pods -o wide'
+                sh 'kubectl get svc amazon-prime-service'
             }
         }
     }
-    post {
-    always {
-        emailext attachLog: true,
-            subject: "'${currentBuild.result}'",
-            body: """
-                <html>
-                <body>
-                    <div style="background-color: #FFA07A; padding: 10px; margin-bottom: 10px;">
-                        <p style="color: white; font-weight: bold;">Project: ${env.JOB_NAME}</p>
-                    </div>
-                    <div style="background-color: #90EE90; padding: 10px; margin-bottom: 10px;">
-                        <p style="color: white; font-weight: bold;">Build Number: ${env.BUILD_NUMBER}</p>
-                    </div>
-                    <div style="background-color: #87CEEB; padding: 10px; margin-bottom: 10px;">
-                        <p style="color: white; font-weight: bold;">URL: ${env.BUILD_URL}</p>
-                    </div>
-                </body>
-                </html>
-            """,
-            to: 'skander.ourimi007@gmail.com',
-            mimeType: 'text/html',
-            attachmentsPattern: 'trivy.txt'
-        }
     }
+
+}
+            
+    }
+ 
 }
