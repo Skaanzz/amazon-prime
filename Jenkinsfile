@@ -126,13 +126,13 @@ spec:
                 """
 
                 // Apply Kubernetes manifests
-                sh 'sudo kubectl apply -f deployment.yaml'
-                sh 'sudo kubectl apply -f service.yaml'
+                sh 'kubectl apply -f deployment.yaml'
+                sh 'kubectl apply -f service.yaml'
 
                 // Verify deployment
-                sh 'sudo kubectl rollout status deployment/amazon-prime --timeout=3m'
-                sh 'sudo kubectl get pods -o wide'
-                sh 'sudo kubectl get svc amazon-prime-service'
+                sh 'kubectl rollout status deployment/amazon-prime --timeout=3m'
+                sh 'kubectl get pods -o wide'
+                sh 'kubectl get svc amazon-prime-service'
             }
         }
     }
