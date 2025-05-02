@@ -53,15 +53,15 @@ pipeline {
         }
         stage ("Build Docker Image") {
             steps {
-                sh "docker build -t amazon-prime ."
+                sh "sudo docker build -t amazon-prime ."
             }
         }
         stage ("Tag & Push to DockerHub") {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'docker') {
-                        sh "docker tag amazon-prime skan07/amazon-prime:latest "
-                        sh "docker push skan07/amazon-prime:latest "
+                        sh "sudo docker tag amazon-prime skan07/amazon-prime:latest "
+                        sh "sudo docker push skan07/amazon-prime:latest "
                     }
                 }
             }
@@ -70,9 +70,9 @@ pipeline {
             steps {
                 script{
                    withDockerRegistry(credentialsId: 'docker', toolName: 'docker'){
-                       sh 'docker-scout quickview skan07/amazon-prime:latest'
-                       sh 'docker-scout cves skan07/amazon-prime:latest'
-                       sh 'docker-scout recommendations skan07/amazon-prime:latest'
+                       sh 'sudo docker-scout quickview skan07/amazon-prime:latest'
+                       sh 'sudo docker-scout cves skan07/amazon-prime:latest'
+                       sh 'sudo docker-scout recommendations skan07/amazon-prime:latest'
                    }
                 }
             }
@@ -133,17 +133,17 @@ spec:
                 sh """
                     mkdir -p ~/.kube
                     cp '${admin.conf}' ~/.kube/config
-                    chmod 600 ~/.kube/config
+                    sudo chmod 600 ~/.kube/config
                 """
 
                 // Apply Kubernetes manifests
-                sh 'kubectl apply -f deployment.yaml'
-                sh 'kubectl apply -f service.yaml'
+                sh 'sudo kubectl apply -f deployment.yaml'
+                sh 'sudo kubectl apply -f service.yaml'
 
                 // Verify deployment
-                sh 'kubectl rollout status deployment/amazon-prime --timeout=3m'
-                sh 'kubectl get pods -o wide'
-                sh 'kubectl get svc amazon-prime-service'
+                sh 'sudo kubectl rollout status deployment/amazon-prime --timeout=3m'
+                sh 'sudo kubectl get pods -o wide'
+                sh 'sudo kubectl get svc amazon-prime-service'
             }
         }
     }
