@@ -66,17 +66,6 @@ pipeline {
                 }
             }
         }
-        stage('Docker Scout Image') {
-            steps {
-                script{
-                   withDockerRegistry(credentialsId: 'docker'){
-                       sh 'docker-scout quickview skan07/amazon-prime:latest'
-                       sh 'docker-scout cves skan07/amazon-prime:latest'
-                       sh 'docker-scout recommendations skan07/amazon-prime:latest'
-                   }
-                }
-            }
-        }
         stage('Generate Kubernetes Manifests') {
             steps {
                 script {
