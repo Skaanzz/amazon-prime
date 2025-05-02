@@ -53,7 +53,7 @@ pipeline {
         }
         stage ("Build Docker Image") {
             steps {
-                sh "sudo docker build -t amazon-prime ."
+                sh "docker build -t amazon-prime ."
             }
         }
         stage ("Tag & Push to DockerHub") {
