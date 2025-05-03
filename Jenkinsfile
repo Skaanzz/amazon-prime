@@ -140,9 +140,7 @@ spec:
                     # Increase timeout and add debugging
                     kubectl rollout status deployment/amazon-prime --timeout=5m || true
                     kubectl get pods -o wide
-                    kubectl describe deployment amazon-prime
-                    kubectl get pods -l app=amazon-prime --field-selector=status.phase=Running -o name | \
-    xargs -r kubectl logs --all-containers=true --tail=50
+                    kubectl describe deployment amazon-prime0
                 '''
             }
         }
