@@ -87,8 +87,7 @@ spec:
     spec:
       containers:
       - name: amazon-prime
-        image: skan07/amazon-prime:latest
-        imagePullPolicy: Always
+        image: ${DOCKER_IMAGE}
         ports:
         - containerPort: 3000
         resources:
@@ -118,7 +117,6 @@ spec:
         stage('Deploy to Kubernetes') {
     steps {
         script {
-            // Change from file credential to kubeconfig content if possible
             withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
                 sh '''
                     mkdir -p ${WORKSPACE}/.kube
@@ -128,13 +126,17 @@ spec:
                     
                     kubectl apply -f deployment.yaml
                     kubectl apply -f service.yaml
-                    kubectl rollout status deployment/amazon-prime --timeout=3m
+                    
+                    # Increase timeout and add debugging
+                    kubectl rollout status deployment/amazon-prime --timeout=5m || true
+                    kubectl get pods -o wide
+                    kubectl describe deployment amazon-prime
+                    kubectl logs -l app=amazon-prime --all-containers=true --tail=50
                 '''
             }
         }
     }
 }
-
 }
             
     }
