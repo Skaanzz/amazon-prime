@@ -87,7 +87,8 @@ spec:
     spec:
       containers:
       - name: amazon-prime
-        image: ${DOCKER_IMAGE}
+        image: skan07/amazon-prime:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 3000
         resources:
