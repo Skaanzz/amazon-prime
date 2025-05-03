@@ -79,6 +79,8 @@ spec:
       labels:
         app: amazon-prime
     spec:
+      imagePullSecrets:
+      - name: regcred
       containers:
       - name: amazon-prime
         image: ${DOCKER_IMAGE}
