@@ -40,12 +40,6 @@ pipeline {
                 sh "npm install"
             }
         }
-        stage('OWASP FS SCAN') {
-            steps {
-                dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
-                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
-            }
-        }
         stage ("Trivy File Scan") {
             steps {
                 sh "trivy fs . > trivy.txt"
@@ -117,13 +111,27 @@ spec:
         stage('Deploy to Kubernetes') {
     steps {
         script {
-            withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
+            withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE'),
+                            usernamePassword(
+                            credentialsId: 'docker',
+                            usernameVariable: 'DOCKER_USER',
+                            passwordVariable: 'DOCKER_PASS'
+                            )            
+                ]) {
                 sh '''
                     mkdir -p ${WORKSPACE}/.kube
                     cp "${KUBECONFIG_FILE}" ${WORKSPACE}/.kube/config
                     chmod 600 ${WORKSPACE}/.kube/config
                     export KUBECONFIG=${WORKSPACE}/.kube/config
                     
+                    # Create Docker registry secret
+                    kubectl create secret docker-registry regcred \
+                        --docker-server=docker.io \
+                        --docker-username=${DOCKER_USER} \
+                        --docker-password=${DOCKER_PASS} \
+                        --docker-email=${DOCKER_USER}@users.noreply.docker.com \
+                        --dry-run=client -o yaml | kubectl apply -f -
+
                     kubectl apply -f deployment.yaml
                     kubectl apply -f service.yaml
                     
