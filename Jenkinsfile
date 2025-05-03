@@ -115,28 +115,24 @@ spec:
         }
 
         stage('Deploy to Kubernetes') {
-            steps {
+    steps {
         script {
-            withCredentials([file(credentialsId: 'kubeconfig', variable: 'ADMIN_CONF')]) {
-                // Set up kubectl access
-                sh """
-                    mkdir -p ~/.kube
-                    cp '${ADMIN_CONF}' ~/.kube/config
-                    chmod 600 ~/.kube/config
-                """
-
-                // Apply Kubernetes manifests
-                sh 'kubectl apply -f deployment.yaml'
-                sh 'kubectl apply -f service.yaml'
-
-                // Verify deployment
-                sh 'kubectl rollout status deployment/amazon-prime --timeout=3m'
-                sh 'kubectl get pods -o wide'
-                sh 'kubectl get svc amazon-prime-service'
+            // Change from file credential to kubeconfig content if possible
+            withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
+                sh '''
+                    mkdir -p ${WORKSPACE}/.kube
+                    cp "${KUBECONFIG_FILE}" ${WORKSPACE}/.kube/config
+                    chmod 600 ${WORKSPACE}/.kube/config
+                    export KUBECONFIG=${WORKSPACE}/.kube/config
+                    
+                    kubectl apply -f deployment.yaml
+                    kubectl apply -f service.yaml
+                    kubectl rollout status deployment/amazon-prime --timeout=3m
+                '''
             }
         }
     }
-    }
+}
 
 }
             
