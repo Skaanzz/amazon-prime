@@ -141,7 +141,8 @@ spec:
                     kubectl rollout status deployment/amazon-prime --timeout=5m || true
                     kubectl get pods -o wide
                     kubectl describe deployment amazon-prime
-                    kubectl logs -l app=amazon-prime --all-containers=true --tail=50
+                    kubectl get pods -l app=amazon-prime --field-selector=status.phase=Running -o name | \
+    xargs -r kubectl logs --all-containers=true --tail=50
                 '''
             }
         }
